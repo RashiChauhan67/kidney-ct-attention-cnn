@@ -39,13 +39,3 @@ Confusion matrix (rows = actual, columns = predicted; Cyst, Normal, Stone, Tumor
 | "Total params" printed | 1,243,617 | includes Adam optimizer state |
 | Model size printed | 1.58 MB | trainable weights only |
 | FLOPs printed | 198 M | hand-written estimator that reuses the input shape for every conv; **unreliable** |
-
-## What the paper reports
-
-| Quantity | Paper | Saved notebook |
-|---|---|---|
-| Accuracy | 99.48% | 98.96% |
-| Parameters | 0.22 M | 0.415 M (0.226 M without the Dense 512 layer) |
-| Images | 12,446 | 12,446 |
-
-See the README for the other differences between the notebook and the paper.

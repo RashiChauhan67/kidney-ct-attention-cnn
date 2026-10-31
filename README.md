@@ -1,4 +1,6 @@
-# Dual-Attention CNN for Kidney Ailment Classification from CT Images
+# Kidney CT Attention CNN
+
+**A lightweight dual-attention CNN that classifies kidney CT slices as cyst, normal, stone or tumor.**
 
 [![CI](https://github.com/RashiChauhan67/kidney-ct-attention-cnn/actions/workflows/ci.yml/badge.svg)](https://github.com/RashiChauhan67/kidney-ct-attention-cnn/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -7,24 +9,31 @@
 
 > **Paper.** R. Chauhan, M. Karnati, P. Singh. *Attention Based Deep Neural Network for Classification of Kidney Ailments Using CT Images.* 2024 15th International Conference on Computing Communication and Networking Technologies (**ICCCNT**), IEEE, 2024. DOI: [10.1109/ICCCNT61001.2024.10723909](https://doi.org/10.1109/ICCCNT61001.2024.10723909)
 
-A small CNN that classifies kidney CT slices into **cyst, normal, stone and tumor**. It combines dense-style feature reuse (three concatenated conv blocks) with a **spatial attention** module and a **channel attention** module.
+[Overview](#overview) · [Architecture](#architecture) · [Quick start](#quick-start) · [Dataset](#dataset) · [Results](#results) · [Notes](#notes) · [Citation](#citation)
 
-The code was cleaned up from the original Kaggle notebook (kept unmodified in [`notebooks/`](notebooks/)). Please read [Relationship between this code and the paper](#relationship-between-this-code-and-the-paper): the saved notebook differs from the paper in its classifier head, its parameter count and its final accuracy.
+## Overview
 
-## Highlights
+Three stacked conv blocks are concatenated (dense-style feature reuse), refined by a **residual spatial attention** module and a **residual channel attention** module, pooled, and classified by a small MLP.
 
-- Four classes on 12,446 CT images; 80% / 20% train / test split.
-- Recorded test accuracy in the notebook: **98.96%** on 2,490 held-out images (the paper reports 99.48%).
-- 0.415 M parameters in the saved notebook (the paper states 0.22 M; see below).
-- Modular Keras 3 port with unit tests, a command-line trainer, and two training protocols (`notebook` and a leakage-free `holdout`).
+This repository has a cleaned, tested Keras 3 implementation, the original experiment notebook, and the recorded results.
+
+| | |
+|---|---|
+| Classes | cyst, normal, stone, tumor |
+| Images | 12,446 CT slices (80% train / 20% test) |
+| Test accuracy | **98.96%** (2,490 test images) |
+| Parameters | 414,837 (0.415 M) |
+| Input | 128 x 128 x 3 |
+
+The accuracy is the value recorded in the notebook (see [Notes](#notes)).
 
 ## Architecture
 
-The author's figure from the paper:
+![Kidney attention CNN](docs/figures/kidney_architecture.png)
 
-![Kidney dual-attention CNN from the paper](docs/figures/kidney_architecture.png)
+*Schematic of the network. Layer widths and module order in `src/kidney_dacnn/model.py` are authoritative.*
 
-What the code in `src/kidney_dacnn/model.py` builds (this matches the saved notebook, verified by parameter count):
+The graph built by `src/kidney_dacnn/model.py`:
 
 ```mermaid
 flowchart LR
@@ -39,26 +48,7 @@ flowchart LR
     D --> O["Dense 4, softmax"]
 ```
 
-## Relationship between this code and the paper
-
-| Item | Paper | Saved notebook (and this code by default) |
-|---|---|---|
-| Classifier head | Dense 256, 64, 4 (figure) | Dense **512**, 256, 64, 4 |
-| Parameters | 0.22 M | **414,837** (0.415 M). Dropping the Dense 512 layer gives 225,909, which matches the paper's figure. |
-| Test accuracy | 99.48% | **98.96%** |
-| Order of attention modules | Channel, then spatial (figure) | Spatial, then channel |
-| Module widths | Channel: Dense 64, 64. Spatial: 3x3 convs of 8, 8, 64, then 1x1 | Channel: Dense C/2 then C. Spatial: 1x1 convs of C/16, C/16, C, then 1 (C = 224) |
-| Split, batch size, epochs, optimizer | 80:20, 16, 50, Adam | the same |
-
-`build_model(dense_units=PAPER_FIGURE_DENSE_UNITS)` builds the head drawn in the paper's figure (about 0.22 M parameters). That variant was **not trained** in the saved notebook, so no result is claimed for it. If you have the notebook that produced the 99.48% figure, it is not this one.
-
-The parameter counts were checked by rebuilding the model and comparing with the notebook's `model.summary()`: 414,389 trainable plus 448 non-trainable (the "1,243,617 total" in the notebook includes Adam's optimizer state).
-
-## Dataset
-
-[CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone](data/README.md) (12,446 CT images: 3,709 cyst, 5,077 normal, 1,377 stone, 2,283 tumor). Not included. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
-
-## Installation
+## Quick start
 
 ```bash
 git clone https://github.com/RashiChauhan67/kidney-ct-attention-cnn.git
@@ -67,10 +57,10 @@ python -m venv .venv && source .venv/bin/activate
 pip install -e .
 ```
 
-## Usage
+Train and evaluate:
 
 ```bash
-# Original protocol (the test split also drives early stopping; see below)
+# Original protocol: the test split also drives early stopping (see Notes)
 python scripts/train.py --data-dir /path/to/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone \
     --dataset ct-kidney --output-dir runs/notebook
 
@@ -83,7 +73,9 @@ python scripts/evaluate.py --data-dir /path/to/CT-KIDNEY-DATASET-Normal-Cyst-Tum
     --dataset ct-kidney --model runs/holdout/best_model.keras
 ```
 
-Defaults follow the notebook: Adam (Keras default learning rate), batch size 16, up to 50 epochs, early stopping on validation accuracy (patience 10, best weights restored; the notebook loaded its best checkpoint, which is equivalent). Each run writes `best_model.keras`, `history.json` and `metrics.json`.
+Defaults: Adam (Keras default learning rate), batch size 16, up to 50 epochs, early stopping on validation accuracy (patience 10, best weights restored). Each run writes `best_model.keras`, `history.json` and `metrics.json`.
+
+Use the model directly:
 
 ```python
 from kidney_dacnn.model import build_model, compile_model
@@ -91,11 +83,15 @@ from kidney_dacnn.model import build_model, compile_model
 model = compile_model(build_model())  # 414,837 parameters
 ```
 
-## Recorded results (from the original notebook)
+## Dataset
 
-These are the numbers stored in the notebook's outputs. **They were not re-run for this repository.**
+CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone: 12,446 images (3,709 cyst, 5,077 normal, 1,377 stone, 2,283 tumor). Data is not included; see [`data/README.md`](data/README.md) for the folder layout, source and citation. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
 
-Test accuracy **0.9896**, test loss 0.0289, on 2,490 images (20% of 12,446). Model checkpoint: epoch 15 of 25 epochs run.
+## Results
+
+Recorded in the original notebook. **These were not re-run for this repository.** Full tables are in [`results/recorded_results.md`](results/recorded_results.md).
+
+Test accuracy **0.9896**, test loss 0.0289, on 2,490 images.
 
 | Class | Precision | Recall | F1 | Support | AUC |
 |---|---|---|---|---|---|
@@ -105,7 +101,7 @@ Test accuracy **0.9896**, test loss 0.0289, on 2,490 images (20% of 12,446). Mod
 | Tumor | 0.98 | 1.00 | 0.99 | 442 | 1.0000 |
 | macro avg | 0.99 | 0.98 | 0.99 | 2490 | |
 
-The weakest class is Stone (recall 0.94): 14 stones were predicted as cysts and 3 as normal.
+The weakest class is Stone: 14 stones were predicted as cysts and 3 as normal.
 
 | Confusion matrix (counts) | Confusion matrix (normalized) |
 |---|---|
@@ -115,7 +111,7 @@ The weakest class is Stone (recall 0.94): 14 stones were predicted as cysts and 
 |---|---|
 | ![](results/figures/roc_curves.png) | ![](results/figures/per_class_radar.png) |
 
-Training curves from the notebook run. **Validation accuracy is very unstable**, swinging between about 0.2 and 0.99 from one epoch to the next (0.61 in the last epoch), while training accuracy rises smoothly:
+Training curves. Validation accuracy swings between about 0.2 and 0.99 from epoch to epoch (0.61 in the last epoch) while training accuracy rises smoothly:
 
 | Accuracy | Loss |
 |---|---|
@@ -127,37 +123,34 @@ t-SNE of the features before and after training:
 |---|---|
 | ![](results/figures/tsne_original_features.png) | ![](results/figures/tsne_trained_features.png) |
 
-## Limitations and reproducibility notes
+## Notes
 
-- **The recorded test accuracy is optimistic.** The notebook passes the test split as `validation_data`, and early stopping and checkpoint selection monitor it. The reported accuracy (0.9896) equals the best validation accuracy exactly, at epoch 15. Given how unstable the validation curve is, a different epoch would have scored very differently. Use `--protocol holdout` for numbers that are not selected on the test set.
-- The split is random (not stratified) and at the image level. If several slices come from the same patient they can appear on both sides of the split, which can inflate accuracy. The dataset does not provide patient identifiers in the notebook.
-- No framework-level random seeds are set in the notebook, so a re-run will not reproduce the recorded numbers bit for bit. This port reads files in sorted order, so the exact test images can differ slightly from the original run.
-- The notebook's FLOPs figure (about 0.2 GFLOPs) comes from a hand-written estimator that applies the *model input shape* to every convolution, so it should not be relied on. Model size printed by the notebook (1.58 MB) counts trainable weights only.
+**Implementation.**
+- The default model reproduces the saved notebook: a Dense 512 -> 256 -> 64 head, spatial attention applied before channel attention. Its parameter count (414,837 = 414,389 trainable + 448 non-trainable) matches the notebook's `model.summary()`; the "1,243,617 total" printed there includes Adam's optimizer state.
+- `build_model(dense_units=COMPACT_DENSE_UNITS)` builds a smaller Dense 256 -> 64 head (225,909 parameters). That variant has not been trained here.
+
+**Evaluation.**
+- The notebook passes the test split as `validation_data`, and early stopping and checkpoint selection monitor it. The recorded accuracy equals the best validation accuracy exactly (0.9896, epoch 15 of 25). Given how unstable the validation curve is, other epochs scored very differently. Use `--protocol holdout` for numbers that are not selected on the test set.
+- The split is random (not stratified) at the image level. If several slices come from one patient, they can fall on both sides of the split. No patient identifiers are used.
+- No framework-level seeds are set, so a re-run will not reproduce the recorded numbers exactly. This port reads files in sorted order, so the exact test images can differ slightly.
+- The notebook's FLOPs figure (about 0.2 GFLOPs) comes from a hand-written estimator that applies the model input shape to every convolution, so it should not be relied on. The 1.58 MB model size it prints counts trainable weights only.
 - AUC values are read from the ROC plot legend.
-- Not a medical device. This is research code and has not been validated for clinical use.
+- Research code only; not validated for clinical use.
 
-## Repository layout
+## Repository structure
 
 ```
 .
 ├── src/kidney_dacnn/    # model, data loading, training and evaluation
 ├── scripts/             # train.py, evaluate.py
 ├── tests/               # unit tests (synthetic data; no dataset needed)
-├── notebooks/           # original notebook (unmodified)
-├── docs/figures/        # architecture figure from the paper
+├── notebooks/           # original experiment notebook
+├── docs/figures/        # architecture figure
 ├── results/             # recorded notebook results and figures
 └── data/README.md       # dataset instructions
 ```
 
-## Development
-
-```bash
-pip install -e ".[dev]"
-ruff check .
-pytest
-```
-
-The tests check, among other things, that the default model has exactly the parameter count printed by the notebook (414,837) and that the paper-figure head has about 0.22 M.
+Development: `pip install -e ".[dev]"`, then `ruff check .` and `pytest`.
 
 ## Citation
 
@@ -178,4 +171,4 @@ If you use this code, please cite the paper (a `CITATION.cff` is provided):
 
 MIT. See [LICENSE](LICENSE). The dataset has its own license; check it before reuse.
 
-**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code, and the result plots generated from the notebook.
+**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code and the result plots generated from the notebook.

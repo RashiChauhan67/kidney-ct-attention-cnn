@@ -12,9 +12,9 @@ from keras import Model, layers
 
 BN_EPSILON = 1e-5
 
-# Head used by the saved notebook (Dense 512 -> 256 -> 64). The paper's figure shows 256 -> 64.
+# Classifier heads: the one in the saved notebook (Dense 512 -> 256 -> 64) and a smaller one.
 NOTEBOOK_DENSE_UNITS = (512, 256, 64)
-PAPER_FIGURE_DENSE_UNITS = (256, 64)
+COMPACT_DENSE_UNITS = (256, 64)
 
 
 def residual_spatial_attention(x, reduction_ratio: int = 16):
@@ -48,9 +48,9 @@ def build_model(
         input_shape: Input CT slice shape.
         num_classes: 4 (cyst, normal, stone, tumor).
         dense_units: Hidden MLP widths. The default reproduces the saved notebook
-            (``NOTEBOOK_DENSE_UNITS``). ``PAPER_FIGURE_DENSE_UNITS`` gives the
-            head drawn in the paper's figure, which has roughly 0.22 M parameters,
-            the size stated in the paper.
+            (``NOTEBOOK_DENSE_UNITS``, 414,837 parameters). ``COMPACT_DENSE_UNITS``
+            drops the first dense layer (225,909 parameters); it has not been
+            trained here.
     """
     inputs = layers.Input(input_shape)
 

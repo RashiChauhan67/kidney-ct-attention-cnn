@@ -1,6 +1,6 @@
 import numpy as np
 
-from kidney_dacnn.model import NOTEBOOK_DENSE_UNITS, PAPER_FIGURE_DENSE_UNITS, build_model
+from kidney_dacnn.model import COMPACT_DENSE_UNITS, NOTEBOOK_DENSE_UNITS, build_model
 
 
 def test_default_matches_the_saved_notebook():
@@ -8,15 +8,14 @@ def test_default_matches_the_saved_notebook():
     assert build_model().count_params() == 414_837
 
 
-def test_paper_figure_head_is_about_the_size_stated_in_the_paper():
-    params = build_model(dense_units=PAPER_FIGURE_DENSE_UNITS).count_params()
+def test_compact_head_has_fewer_parameters():
+    params = build_model(dense_units=COMPACT_DENSE_UNITS).count_params()
     assert params == 225_909
-    assert abs(params / 1e6 - 0.22) < 0.01  # the paper states 0.22 M parameters
 
 
 def test_notebook_head_has_the_extra_dense_512_layer():
     assert NOTEBOOK_DENSE_UNITS == (512, 256, 64)
-    assert PAPER_FIGURE_DENSE_UNITS == (256, 64)
+    assert COMPACT_DENSE_UNITS == (256, 64)
 
 
 def test_forward_pass_gives_a_probability_distribution():
