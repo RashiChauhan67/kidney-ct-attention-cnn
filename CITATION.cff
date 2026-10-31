@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+type: software
+title: "Dual-attention CNN for kidney ailment classification from CT images"
+authors:
+  - family-names: Chauhan
+    given-names: Rashi
+license: MIT
+repository-code: "https://github.com/RashiChauhan67/kidney-ct-attention-cnn"
+preferred-citation:
+  type: conference-paper
+  title: "Attention Based Deep Neural Network for Classification of Kidney Ailments Using CT Images"
+  authors:
+    - family-names: Chauhan
+      given-names: Rashi
+    - family-names: Karnati
+      given-names: Mohan
+    - family-names: Singh
+      given-names: Pradeep
+  collection-title: "2024 15th International Conference on Computing Communication and Networking Technologies (ICCCNT)"
+  publisher:
+    name: IEEE
+  year: 2024
+  doi: "10.1109/ICCCNT61001.2024.10723909"
