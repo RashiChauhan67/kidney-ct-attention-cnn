@@ -4,7 +4,7 @@ No data is stored in this repository. Download the dataset yourself and check it
 
 ## Dataset
 
-**CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone**: 12,446 CT images in four classes. The recorded notebook run read it from Kaggle.
+**CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone**: 12,446 CT images in four classes, as described in the paper: 3,709 cysts, 5,077 normal kidneys, 1,377 stones and 2,283 tumors. The notebook read it from Kaggle (dataset slug `ct-kidney-dataset-normal-cyst-tumor-and-stone`).
 
 Expected layout (the folder names are the ones used by the notebook):
 
@@ -23,6 +23,8 @@ CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone/
 
 ## Source and citation
 
-Please verify the exact source and license of the copy you use.
+The paper cites this dataset as:
 
-- Islam, M. N. et al. *Vision transformer and explainable transfer learning models for auto detection of kidney cyst, stone and tumor from CT-radiography.* Scientific Reports 12, 11440 (2022). This is the publication usually cited for this dataset.
+- Islam, M. N., Hasan, M., Hossain, M. K., Alam, M. G. R., Uddin, M. Z., Soylu, A. *Vision transformer and explainable transfer learning models for auto detection of kidney cyst, stone and tumor from CT-radiography.* Scientific Reports (2022).
+
+Check the license shown on the Kaggle dataset page for your copy before reuse, and cite the publication above when you publish results.

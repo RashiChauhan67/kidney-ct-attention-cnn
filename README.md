@@ -56,7 +56,7 @@ The parameter counts were checked by rebuilding the model and comparing with the
 
 ## Dataset
 
-[CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone](data/README.md) (12,446 CT images; classes `Cyst`, `Normal`, `Stone`, `Tumor`). Not included. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
+[CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone](data/README.md) (12,446 CT images: 3,709 cyst, 5,077 normal, 1,377 stone, 2,283 tumor). Not included. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
 
 ## Installation
 
