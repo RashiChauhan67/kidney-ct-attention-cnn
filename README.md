@@ -9,7 +9,7 @@
 
 > **Paper.** R. Chauhan, M. Karnati, P. Singh. *Attention Based Deep Neural Network for Classification of Kidney Ailments Using CT Images.* 2024 15th International Conference on Computing Communication and Networking Technologies (**ICCCNT**), IEEE, 2024. DOI: [10.1109/ICCCNT61001.2024.10723909](https://doi.org/10.1109/ICCCNT61001.2024.10723909)
 
-[Overview](#overview) · [Architecture](#architecture) · [Quick start](#quick-start) · [Dataset](#dataset) · [Results](#results) · [Notes](#notes) · [Citation](#citation)
+[Overview](#overview) · [Architecture](#architecture) · [Pipeline](#pipeline) · [Quick start](#quick-start) · [Dataset](#dataset) · [Results](#results) · [Notes](#notes) · [Citation](#citation)
 
 ## Overview
 
@@ -31,22 +31,9 @@ The accuracy is the value recorded in the notebook (see [Notes](#notes)).
 
 ![Kidney attention CNN](docs/figures/kidney_architecture.png)
 
-*Schematic of the network. Layer widths and module order in `src/kidney_dacnn/model.py` are authoritative.*
+## Pipeline
 
-The graph built by `src/kidney_dacnn/model.py`:
-
-```mermaid
-flowchart LR
-    I["Input CT<br/>128 x 128 x 3"] --> B1["Conv 32 + BN"] --> B2["Conv 64 + BN"] --> B3["Conv 128 + BN"]
-    B1 --> C["concat<br/>224 channels"]
-    B2 --> C
-    B3 --> C
-    C --> SA["Residual spatial attention<br/>1x1 convs 14, 14, 224 -> map 1<br/>x input, + input"]
-    SA --> CA["Residual channel attention<br/>GAP -> Dense 112 -> Dense 224<br/>x input, + input"]
-    CA --> G["GAP"]
-    G --> D["Dense 512 -> 256 -> 64"]
-    D --> O["Dense 4, softmax"]
-```
+![Pipeline](docs/figures/kidney_pipeline.png)
 
 ## Quick start
 
@@ -86,6 +73,8 @@ model = compile_model(build_model())  # 414,837 parameters
 ## Dataset
 
 CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone: 12,446 images (3,709 cyst, 5,077 normal, 1,377 stone, 2,283 tumor). Data is not included; see [`data/README.md`](data/README.md) for the folder layout, source and citation. Images are resized to 128 x 128, scaled to [0, 1] and read with OpenCV.
+
+![Sample CT slices: cyst, normal, stone, tumor](docs/figures/dataset_samples.png)
 
 ## Results
 
@@ -145,7 +134,7 @@ t-SNE of the features before and after training:
 ├── scripts/             # train.py, evaluate.py
 ├── tests/               # unit tests (synthetic data; no dataset needed)
 ├── notebooks/           # original experiment notebook
-├── docs/figures/        # architecture figure
+├── docs/figures/        # architecture, pipeline and dataset figures
 ├── results/             # recorded notebook results and figures
 └── data/README.md       # dataset instructions
 ```
@@ -171,4 +160,4 @@ If you use this code, please cite the paper (a `CITATION.cff` is provided):
 
 MIT. See [LICENSE](LICENSE). The dataset has its own license; check it before reuse.
 
-**Figures.** The architecture figure in `docs/figures/` is reproduced from the paper by its authors. Reuse of that figure is subject to the publisher's terms (IEEE); the MIT license covers the code and the result plots generated from the notebook.
+**Figures.** The architecture and pipeline figures in `docs/figures/` are reproduced from the paper by its authors. Reuse of those figures is subject to the publisher's terms (IEEE). The sample CT slices come from the dataset cited in `data/README.md`; check its license. The MIT license covers the code and the result plots generated from the notebook.
