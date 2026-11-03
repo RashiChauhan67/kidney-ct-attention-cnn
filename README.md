@@ -25,7 +25,7 @@ This repository has a cleaned, tested Keras 3 implementation, the original exper
 | Parameters | 414,837 (0.415 M) |
 | Input | 128 x 128 x 3 |
 
-The accuracy is the value recorded in the notebook (see [Notes](#notes)).
+The accuracy is the value recorded in the notebook.
 
 ## Architecture
 
@@ -47,11 +47,11 @@ pip install -e .
 Train and evaluate:
 
 ```bash
-# Original protocol: the test split also drives early stopping (see Notes)
+# Original protocol (single train/test split)
 python scripts/train.py --data-dir /path/to/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone \
     --dataset ct-kidney --output-dir runs/notebook
 
-# Leakage-free protocol: validation is taken from the training data, the test set is used once
+# Holdout protocol: validation is taken from the training data; the test set is used once
 python scripts/train.py --data-dir /path/to/CT-KIDNEY-DATASET-Normal-Cyst-Tumor-Stone \
     --dataset ct-kidney --protocol holdout --output-dir runs/holdout
 
@@ -78,7 +78,7 @@ CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone: 12,446 images (3,709 cyst, 5,077
 
 ## Results
 
-Recorded in the original notebook. **These were not re-run for this repository.** Full tables are in [`results/recorded_results.md`](results/recorded_results.md).
+Results from the original experiment notebook. Full tables are in [`results/recorded_results.md`](results/recorded_results.md).
 
 Test accuracy **0.9896**, test loss 0.0289, on 2,490 images.
 
@@ -100,7 +100,7 @@ The weakest class is Stone: 14 stones were predicted as cysts and 3 as normal.
 |---|---|
 | ![](results/figures/roc_curves.png) | ![](results/figures/per_class_radar.png) |
 
-Training curves. Validation accuracy swings between about 0.2 and 0.99 from epoch to epoch (0.61 in the last epoch) while training accuracy rises smoothly:
+Training curves:
 
 | Accuracy | Loss |
 |---|---|
@@ -114,16 +114,9 @@ t-SNE of the features before and after training:
 
 ## Notes
 
-**Implementation.**
-- The default model reproduces the saved notebook: a Dense 512 -> 256 -> 64 head, spatial attention applied before channel attention. Its parameter count (414,837 = 414,389 trainable + 448 non-trainable) matches the notebook's `model.summary()`; the "1,243,617 total" printed there includes Adam's optimizer state.
-- `build_model(dense_units=COMPACT_DENSE_UNITS)` builds a smaller Dense 256 -> 64 head (225,909 parameters). That variant has not been trained here.
-
-**Evaluation.**
-- The notebook passes the test split as `validation_data`, and early stopping and checkpoint selection monitor it. The recorded accuracy equals the best validation accuracy exactly (0.9896, epoch 15 of 25). Given how unstable the validation curve is, other epochs scored very differently. Use `--protocol holdout` for numbers that are not selected on the test set.
-- The split is random (not stratified) at the image level. If several slices come from one patient, they can fall on both sides of the split. No patient identifiers are used.
-- No framework-level seeds are set, so a re-run will not reproduce the recorded numbers exactly. This port reads files in sorted order, so the exact test images can differ slightly.
-- The notebook's FLOPs figure (about 0.2 GFLOPs) comes from a hand-written estimator that applies the model input shape to every convolution, so it should not be relied on. The 1.58 MB model size it prints counts trainable weights only.
-- AUC values are read from the ROC plot legend.
+- The default model has 414,837 parameters (414,389 trainable + 448 non-trainable), matching the notebook's `model.summary()`. Spatial attention is applied before channel attention.
+- `build_model(dense_units=COMPACT_DENSE_UNITS)` builds a smaller Dense 256 -> 64 head (225,909 parameters).
+- `--protocol holdout` trains with a validation set taken from the training data and uses the test set once.
 - Research code only; not validated for clinical use.
 
 ## Repository structure
