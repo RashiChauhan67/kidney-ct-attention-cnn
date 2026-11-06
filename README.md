@@ -21,11 +21,14 @@ This repository has a cleaned, tested Keras 3 implementation, the original exper
 |---|---|
 | Classes | cyst, normal, stone, tumor |
 | Images | 12,446 CT slices (80% train / 20% test) |
-| Test accuracy | **98.96%** (2,490 test images) |
-| Parameters | 414,837 (0.415 M) |
-| Input | 128 x 128 x 3 |
 
-The accuracy is the value recorded in the notebook.
+| | Paper (ICCCNT 2024) | This repository (recorded notebook run) |
+|---|---|---|
+| Test accuracy | **99.48%** | 98.96% (2,490 test images) |
+| Parameters | about 0.22 M | 414,837 (0.415 M) |
+| Input | not listed here | 128 x 128 x 3 |
+
+The paper column is as reported in the paper. The repository column is the value recorded in the original notebook. The two runs differ in accuracy and model size, and this code has not been shown to reproduce the paper's 99.48%. For the published results, use the paper.
 
 ## Architecture
 
@@ -78,7 +81,22 @@ CT KIDNEY DATASET: Normal-Cyst-Tumor and Stone: 12,446 images (3,709 cyst, 5,077
 
 ## Results
 
-Results from the original experiment notebook. Full tables are in [`results/recorded_results.md`](results/recorded_results.md).
+### Reported in the paper
+
+Overall accuracy **99.48%** on an 80:20 train/test split of the 12,446 images, with about 0.22 M parameters (Chauhan, Karnati and Singh, ICCCNT 2024, Table I).
+
+| Class | Precision | Recall | F1 |
+|---|---|---|---|
+| Cyst | 0.99 | 1.00 | 1.00 |
+| Normal | 0.99 | 1.00 | 0.99 |
+| Stone | 1.00 | 0.94 | 0.97 |
+| Tumor | 1.00 | 1.00 | 1.00 |
+
+Stone is the weakest class in the paper as well (recall 0.94).
+
+### Recorded in this repository (original notebook)
+
+Results from the original experiment notebook. Full tables are in [`results/recorded_results.md`](results/recorded_results.md). These differ from the paper's figures above.
 
 Test accuracy **0.9896**, test loss 0.0289, on 2,490 images.
 
@@ -115,6 +133,7 @@ t-SNE of the features before and after training:
 ## Notes
 
 - The default model has 414,837 parameters (414,389 trainable + 448 non-trainable), matching the notebook's `model.summary()`. Spatial attention is applied before channel attention.
+- The paper reports about 0.22 M parameters and 99.48% accuracy; the recorded notebook run in this repository has 0.415 M parameters and 98.96% accuracy (see [Overview](#overview)).
 - `build_model(dense_units=COMPACT_DENSE_UNITS)` builds a smaller Dense 256 -> 64 head (225,909 parameters).
 - `--protocol holdout` trains with a validation set taken from the training data and uses the test set once.
 - Research code only; not validated for clinical use.
